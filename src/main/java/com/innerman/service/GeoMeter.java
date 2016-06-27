@@ -1,5 +1,8 @@
-package com.innerman;
+package com.innerman.service;
 
+import com.innerman.geo.Line;
+import com.innerman.geo.Location;
+import com.innerman.geo.Polyline;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,11 +12,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class GeoMeter {
 
+    private static final double degr = Math.PI * 2 / 360;
+    private static final double radian = 1 / degr;
+
+    public boolean intersects(Location loc, Polyline line, Double radius) {
+
+        for(Line l : line.getLines()) {
+            if(intersects(loc, l, radius)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //https://gis.stackexchange.com/questions/36841/line-intersection-with-circle-on-a-sphere-globe-or-earth
     public boolean intersects(Location loc, Line line, Double radius) {
-
-        double degr = Math.PI * 2 / 360;
-        double radian = 1 / degr;
 
         Location center = loc.toRadians();
 

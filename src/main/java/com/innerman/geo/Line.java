@@ -1,4 +1,4 @@
-package com.innerman;
+package com.innerman.geo;
 
 import java.io.Serializable;
 

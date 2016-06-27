@@ -1,5 +1,9 @@
 package com.innerman;
 
+import com.innerman.geo.Line;
+import com.innerman.geo.Location;
+import com.innerman.service.GeoMeter;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +24,22 @@ public class MostransbotApplicationTests {
 	}
 
 	@Test
-	public void testMeter() {
+	public void testMeterTrue() {
 
         Location loc = new Location(48.137024, 11.575249);
         Line line = new Line(new Location(48.139115, 11.578081), new Location(48.146303, 11.593102));
 
-        geoMeter.intersects(loc, line, 1000.0);
-	}
+		boolean res = geoMeter.intersects(loc, line, 1000.0);
+        Assert.assertTrue(res);
+    }
+
+    @Test
+    public void testMeterFalse() {
+
+        Location loc = new Location(58.137024, 12.575249);
+        Line line = new Line(new Location(48.139115, 11.578081), new Location(48.146303, 11.593102));
+
+        boolean res = geoMeter.intersects(loc, line, 1000.0);
+        Assert.assertFalse(res);
+    }
 }
