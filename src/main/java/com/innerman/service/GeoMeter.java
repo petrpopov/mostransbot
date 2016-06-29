@@ -1,8 +1,9 @@
 package com.innerman.service;
 
 import com.innerman.geo.Line;
-import com.innerman.geo.Location;
+import com.innerman.geo.LocationEntity;
 import com.innerman.geo.Polyline;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,7 +16,14 @@ public class GeoMeter {
     private static final double degr = Math.PI * 2 / 360;
     private static final double radian = 1 / degr;
 
-    public boolean intersects(Location loc, Polyline line, Double radius) {
+    @Value("${search.radius}")
+    private Double defaultRadius;
+
+    public boolean intersects(LocationEntity loc, Polyline line) {
+        return intersects(loc, line, defaultRadius);
+    }
+
+    public boolean intersects(LocationEntity loc, Polyline line, Double radius) {
 
         for(Line l : line.getLines()) {
             if(intersects(loc, l, radius)) {
@@ -27,44 +35,44 @@ public class GeoMeter {
     }
 
     //https://gis.stackexchange.com/questions/36841/line-intersection-with-circle-on-a-sphere-globe-or-earth
-    public boolean intersects(Location loc, Line line, Double radius) {
+    public boolean intersects(LocationEntity loc, Line line, Double radius) {
 
-        Location center = loc.toRadians();
+        LocationEntity center = loc.toRadians();
 
-        Location a0 = line.getStart().toRadians();
-        Location b0 = line.getEnd().toRadians();
+        LocationEntity a0 = line.getStart().toRadians();
+        LocationEntity b0 = line.getEnd().toRadians();
 
-        Location A = a0.toProjection(center);
-        Location B = b0.toProjection(center);
-        Location C = center.toProjection(center);
+        LocationEntity A = a0.toProjection(center);
+        LocationEntity B = b0.toProjection(center);
+        LocationEntity C = center.toProjection(center);
 
-        Location v = A.minus(C);
-        Location u = B.minus(A);
+        LocationEntity v = A.minus(C);
+        LocationEntity u = B.minus(A);
 
         //square equation coefs
-        Location alpha = u.square();
-        Location beta = u.multiply(v);
-        Location gamma = v.square().minus(radius*radius);
+        LocationEntity alpha = u.square();
+        LocationEntity beta = u.multiply(v);
+        LocationEntity gamma = v.square().minus(radius*radius);
 
-        Location t = getSquareEquationResults(alpha, beta, gamma);
+        LocationEntity t = getSquareEquationResults(alpha, beta, gamma);
         if(t == null) {
             return false;
         }
 
-        Location intersect = a0.plus(b0.minus(a0).divide(t)).multiply(radian);
+        LocationEntity intersect = a0.plus(b0.minus(a0).divide(t)).multiply(radian);
         System.out.println(intersect);
         return true;
     }
 
-    private Location getSquareEquationResults(Location alpha, Location beta, Location gamma) {
+    private LocationEntity getSquareEquationResults(LocationEntity alpha, LocationEntity beta, LocationEntity gamma) {
 
-        Location D = beta.square().minus(alpha.multiply(4.0).multiply(gamma));
+        LocationEntity D = beta.square().minus(alpha.multiply(4.0).multiply(gamma));
         if(!D.sqrtable()) {
             return null;
         }
 
-        Location res1 = beta.multiply(-1.0).plus(D.sqrt()).divide(alpha.multiply(2.0));
-        Location res2 = beta.multiply(-1.0).minus(D.sqrt()).divide(alpha.multiply(2.0));
+        LocationEntity res1 = beta.multiply(-1.0).plus(D.sqrt()).divide(alpha.multiply(2.0));
+        LocationEntity res2 = beta.multiply(-1.0).minus(D.sqrt()).divide(alpha.multiply(2.0));
         return res1;
     }
 }

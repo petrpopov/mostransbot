@@ -9,10 +9,10 @@ import java.util.List;
  */
 public class Polyline implements Serializable {
 
-    private List<Location> points = new ArrayList<>();
+    private List<LocationEntity> points = new ArrayList<>();
 
     public void addPoint(Double lat, Double lng) {
-        points.add(new Location(lat, lng));
+        points.add(new LocationEntity(lat, lng));
     }
 
     public List<Line> getLines() {
@@ -26,11 +26,11 @@ public class Polyline implements Serializable {
         return res;
     }
 
-    public List<Location> getPoints() {
+    public List<LocationEntity> getPoints() {
         return points;
     }
 
-    public void setPoints(List<Location> points) {
+    public void setPoints(List<LocationEntity> points) {
         this.points = points;
     }
 }

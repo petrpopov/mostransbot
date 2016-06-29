@@ -7,30 +7,30 @@ import java.io.Serializable;
  */
 public class Line implements Serializable {
 
-    private Location start;
-    private Location end;
+    private LocationEntity start;
+    private LocationEntity end;
 
     public Line() {
     }
 
-    public Line(Location start, Location end) {
+    public Line(LocationEntity start, LocationEntity end) {
         this.start = start;
         this.end = end;
     }
 
-    public Location getStart() {
+    public LocationEntity getStart() {
         return start;
     }
 
-    public void setStart(Location start) {
+    public void setStart(LocationEntity start) {
         this.start = start;
     }
 
-    public Location getEnd() {
+    public LocationEntity getEnd() {
         return end;
     }
 
-    public void setEnd(Location end) {
+    public void setEnd(LocationEntity end) {
         this.end = end;
     }
 }

@@ -5,92 +5,92 @@ import java.io.Serializable;
 /**
  * Created by petrpopov on 27/06/16.
  */
-public class Location implements Serializable {
+public class LocationEntity implements Serializable {
 
     private static final Double EARTH = 6371007.2;
 
     private Double lat;
     private Double lng;
 
-    public Location() {
+    public LocationEntity() {
     }
 
-    public Location(Double lat, Double lng) {
+    public LocationEntity(Double lat, Double lng) {
         this.lat = lat;
         this.lng = lng;
     }
 
-    public Location toRadians() {
+    public LocationEntity toRadians() {
 
-        Location loc = new Location();
+        LocationEntity loc = new LocationEntity();
         loc.setLat(Math.toRadians(getLat()));
         loc.setLng(Math.toRadians(getLng()));
         return loc;
     }
 
-    public Location toProjection(Location center) {
+    public LocationEntity toProjection(LocationEntity center) {
 
-        Location loc = new Location();
+        LocationEntity loc = new LocationEntity();
         loc.setLat( getLat()*EARTH );
         loc.setLng( getLng()*Math.cos(center.getLng())*EARTH);
         return loc;
     }
 
-    public Location minus(Location loc) {
+    public LocationEntity minus(LocationEntity loc) {
 
-        Location res = new Location();
+        LocationEntity res = new LocationEntity();
         res.setLat(getLat() - loc.getLat());
         res.setLng(getLng() - loc.getLng());
         return res;
     }
 
-    public Location plus(Location loc) {
+    public LocationEntity plus(LocationEntity loc) {
 
-        Location res = new Location();
+        LocationEntity res = new LocationEntity();
         res.setLat(getLat()+loc.getLat());
         res.setLng(getLng()+loc.getLng());
         return res;
     }
 
-    public Location minus(Double val) {
+    public LocationEntity minus(Double val) {
 
-        Location res = new Location();
+        LocationEntity res = new LocationEntity();
         res.setLat(getLat()-val);
         res.setLng(getLng()-val);
         return res;
     }
 
-    public Location multiply(Location loc) {
+    public LocationEntity multiply(LocationEntity loc) {
 
-        Location res = new Location();
+        LocationEntity res = new LocationEntity();
         res.setLat(getLat()*loc.getLat());
         res.setLng(getLng()*loc.getLng());
         return res;
     }
 
-    public Location multiply(Double val) {
+    public LocationEntity multiply(Double val) {
 
-        Location res = new Location();
+        LocationEntity res = new LocationEntity();
         res.setLat(getLat()*val);
         res.setLng(getLng()*val);
         return res;
     }
 
-    public Location divide(Location loc) {
+    public LocationEntity divide(LocationEntity loc) {
 
-        Location res = new Location();
+        LocationEntity res = new LocationEntity();
         res.setLat(getLat()/loc.getLat());
         res.setLng(getLng()/loc.getLng());
         return res;
     }
 
-    public Location square() {
+    public LocationEntity square() {
         return this.multiply(this);
     }
 
-    public Location sqrt() {
+    public LocationEntity sqrt() {
 
-        Location res = new Location();
+        LocationEntity res = new LocationEntity();
         res.setLat( Math.sqrt(getLat()));
         res.setLng( Math.sqrt(getLng()));
         return res;
@@ -122,7 +122,7 @@ public class Location implements Serializable {
 
     @Override
     public String toString() {
-        return "Location{" +
+        return "LocationEntity{" +
                 "lat=" + lat +
                 ", lng=" + lng +
                 '}';
@@ -133,10 +133,10 @@ public class Location implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Location location = (Location) o;
+        LocationEntity locationEntity = (LocationEntity) o;
 
-        if (lat != null ? !lat.equals(location.lat) : location.lat != null) return false;
-        return lng != null ? lng.equals(location.lng) : location.lng == null;
+        if (lat != null ? !lat.equals(locationEntity.lat) : locationEntity.lat != null) return false;
+        return lng != null ? lng.equals(locationEntity.lng) : locationEntity.lng == null;
 
     }
 
