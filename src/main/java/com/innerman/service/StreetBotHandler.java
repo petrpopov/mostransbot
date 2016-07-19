@@ -1,7 +1,7 @@
 package com.innerman.service;
 
 import com.google.common.base.Strings;
-import com.innerman.dto.StreetDTO;
+import com.innerman.dto.StreetEntity;
 import com.innerman.geo.LocationEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class StreetBotHandler {
             LocationEntity loc = new LocationEntity(location.getLatitude(), location.getLongitude());
 
             logger.info("Searching for streets for location {}", loc);
-            List<StreetDTO> streets = streetService.findNearestStreets(loc);
+            List<StreetEntity> streets = streetService.findNearestStreets(loc);
             logger.info("Found {} streets for locatio {}", streets.size(), loc);
 
             streets.forEach(s -> {

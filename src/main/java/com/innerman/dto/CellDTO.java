@@ -3,6 +3,8 @@ package com.innerman.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.springframework.data.mongodb.core.geo.GeoJsonMultiLineString;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -51,7 +53,8 @@ public class CellDTO implements Serializable {
     private String descr;
 
     @JsonProperty("geoData")
-    private GeoDataDTO geoData;
+    @GeoSpatialIndexed
+    private GeoJsonMultiLineString geoData;
 
     public Long getGlobalId() {
         return globalId;
@@ -141,11 +144,11 @@ public class CellDTO implements Serializable {
         this.descr = descr;
     }
 
-    public GeoDataDTO getGeoData() {
+    public GeoJsonMultiLineString getGeoData() {
         return geoData;
     }
 
-    public void setGeoData(GeoDataDTO geoData) {
+    public void setGeoData(GeoJsonMultiLineString geoData) {
         this.geoData = geoData;
     }
 }

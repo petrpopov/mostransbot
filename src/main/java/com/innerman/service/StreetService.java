@@ -2,9 +2,9 @@ package com.innerman.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
-import com.innerman.dto.StreetDTO;
+import com.innerman.dto.StreetEntity;
 import com.innerman.geo.LocationEntity;
-import com.innerman.geo.Polyline;
+import com.innerman.repository.StreetRepository;
 import org.apache.olingo.client.api.communication.request.retrieve.ODataServiceDocumentRequest;
 import org.apache.olingo.client.api.communication.response.ODataRetrieveResponse;
 import org.apache.olingo.client.api.v4.ODataClient;
@@ -38,14 +38,20 @@ public class StreetService {
     private static final String STREET_URL = "http://api.data.mos.ru/v1/datasets/2527/rows?api_key=";
     private static ObjectMapper om = new ObjectMapper();
 
-    @Autowired
-    private GeoMeter geoMeter;
-
     @Value("${api.key}")
     private String apiKey;
 
+    @Value("${search.fullclosed}")
+    private String fullClosed;
+
     private volatile Boolean updating = false;
-    private Set<StreetDTO> streets = Collections.synchronizedSet(new HashSet<>());
+    private Set<StreetEntity> streets = Collections.synchronizedSet(new HashSet<>());
+
+    @Autowired
+    private GeoMeter geoMeter;
+
+    @Autowired
+    private StreetRepository streetRepository;
 
 
     @PostConstruct
@@ -66,69 +72,95 @@ public class StreetService {
 
     public String getStreetInfo(String id) {
 
-        Optional<StreetDTO> st = streets.stream().filter(s -> s.getId().equals(id)).findFirst();
+        Optional<StreetEntity> st = streets.stream().filter(s -> s.getId().equals(id)).findFirst();
         if(!st.isPresent()) {
             return null;
         }
 
-        StreetDTO street = st.get();
-        String res = "*Что ремонтируется:* " + street.getCells().getAddress() + "\n";
+        StreetEntity street = st.get();
 
-        if(!Strings.isNullOrEmpty(street.getCells().getDescr())) {
-            res += "\n*" + street.getCells().getDescr() + "*";
-        }
-
-        if(!Strings.isNullOrEmpty(street.getCells().getLanesClosed())) {
-            res += "\n*Количество перекрытых полос:* " + street.getCells().getLanesClosed();
-        }
-
-        if(!Strings.isNullOrEmpty(street.getCells().getName())) {
-            res += "\n*Зачем:* " + street.getCells().getName();
-        }
-
-        if(!street.getCells().getAdmArea().isEmpty() && !street.getCells().getDistrict().isEmpty()) {
-            res += "\n*Где:* " + street.getCells().getAdmArea().get(0) + ", " + street.getCells().getDistrict().get(0);
-        }
-
-        if(!Strings.isNullOrEmpty(street.getCells().getRequester())) {
-            res += "\n*Кто:* " + street.getCells().getRequester();
-        }
+        String res = "----------------------------------------------\n" +
+                "*" + street.getCells().getAddress() + "\n";
 
         if(street.getCells().getTsFrom() != null && street.getCells().getTsTo() != null) {
-            res += "\n*Когда:* с " + sdf.format(street.getCells().getTsFrom()) + " по " + sdf.format(street.getCells().getTsTo());
 
             Date d = new Date();
             Boolean working = false;
-            if(d.before(street.getCells().getTsTo())) {
+            Boolean started = false;
+
+            if(d.before(street.getCells().getTsTo()) && d.after(street.getCells().getTsFrom())) {
                 working = true;
             }
+            else {
+                if(d.after(street.getCells().getTsFrom())) {
+                    started = true;
+                }
+            }
 
-            res += "\n*Текущий статус:* " + ((working) ? "ремонтируется, выбирайте пути объезда" : "готово!");
+            if(!started) {
+                res += "ремонт еще не начался";
+            }
+            else {
+                res += ((working) ? "ремонт с " +
+                        sdf.format(street.getCells().getTsFrom()) +
+                        " по " + sdf.format(street.getCells().getTsTo())
+                        + ", выбирайте пути объезда" : "ремонт закончен!");
+            }
+        }
+
+        res += "*" + "\n----------------------------------------------";
+
+        String descr = street.getCells().getDescr();
+        if(!Strings.isNullOrEmpty(descr)) {
+            res += "\n*" + descr + "*";
+
+            if(!descr.equals(fullClosed)) {
+                if (!Strings.isNullOrEmpty(street.getCells().getLanesClosed())) {
+                    res += "\nПерекрыто полос: *" + street.getCells().getLanesClosed() + "*";
+                }
+            }
+        }
+        else {
+            if (!Strings.isNullOrEmpty(street.getCells().getLanesClosed())) {
+                res += "\nПерекрыто полос: *" + street.getCells().getLanesClosed() + "*";
+            }
+        }
+
+        if(!street.getCells().getAdmArea().isEmpty() && !street.getCells().getDistrict().isEmpty()) {
+            res += "\nГде: *" + street.getCells().getAdmArea().get(0) + ", " + street.getCells().getDistrict().get(0) + "*";
+        }
+
+        if(!Strings.isNullOrEmpty(street.getCells().getRequester())) {
+            res += "\nКто: " + street.getCells().getRequester();
+        }
+
+        if(!Strings.isNullOrEmpty(street.getCells().getName())) {
+            res += "\nЗачем: " + street.getCells().getName();
         }
 
         return res;
     }
 
-    public List<StreetDTO> findNearestStreets(LocationEntity loc) {
+    public List<StreetEntity> findNearestStreets(LocationEntity loc) {
 
         logger.info("Finding nearest streets for location {}", loc);
 
-        List<StreetDTO> res = new ArrayList<>();
+        List<StreetEntity> res = new ArrayList<>();
 
         synchronized (this) {
-            for (StreetDTO s : streets) {
+            for (StreetEntity s : streets) {
                 if(res.size() == 3) {
                     break;
                 }
 
-                for (Polyline l : s.getPolylines()) {
-                    if(geoMeter.intersects(loc, l)) {
-                        if(!res.contains(s)) {
-                            res.add(s);
-                            break;
-                        }
-                    }
-                }
+//                for (Polyline l : s.getPolylines()) {
+//                    if(geoMeter.intersects(loc, l)) {
+//                        if(!res.contains(s)) {
+//                            res.add(s);
+//                            break;
+//                        }
+//                    }
+//                }
 
             }
         }
@@ -157,11 +189,11 @@ public class StreetService {
 
         try {
             String stringFromInputStream = getStringFromInputStream(rawResponse);
-            StreetDTO[] loadedStreets = om.readValue(stringFromInputStream, StreetDTO[].class);
-            for (StreetDTO street : loadedStreets) {
+            StreetEntity[] loadedStreets = om.readValue(stringFromInputStream, StreetEntity[].class);
+            for (StreetEntity street : loadedStreets) {
                 if(street.getCells() != null && street.getCells().getGeoData() != null) {
                     if(street.getCells().getGeoData().getCoordinates() != null) {
-                        street.getCells().getGeoData().createPolyline();
+//                        street.getCells().getGeoData().createPolyline();
                     }
                 }
             }
@@ -170,6 +202,8 @@ public class StreetService {
                 streets.clear();
                 Collections.addAll(streets, loadedStreets);
             }
+
+            streetRepository.save(streets);
         } catch (Exception e) {
             e.printStackTrace();
         }
